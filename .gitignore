@@ -1,4 +1,5 @@
 gitPush.sh
 fig.drawio
 trash
-*.py
+.env
+sample.json

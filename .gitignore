@@ -1,4 +1,9 @@
 gitPush.sh
 fig.drawio
 trash
-backend/
+.env
+sample.*
+go.mod
+go.sum
+main
+trash

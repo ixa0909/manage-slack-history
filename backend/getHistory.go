@@ -22,13 +22,13 @@ func main() {
 
 	godotenv.Load("./.env")
 	TOKEN := os.Getenv("SLACK_BOT_TOKEN")
-	CHANNEL_ID := os.Getenv("CHANNEL_ID")
+	CHANNEL_ID := os.Getenv("DEV_CHANNEL_ID")
 
-	p := slack.GetConversationHistoryParameters{ChannelID: CHANNEL_ID, Cursor: "", Inclusive: true, Latest: "", Limit: 5, Oldest: "", IncludeAllMetadata: false}
-	fmt.Print(p.ChannelID)
+	p := slack.GetConversationHistoryParameters{ChannelID: CHANNEL_ID, Cursor: "", Inclusive: true, Latest: "", Limit: 5, Oldest: "", IncludeAllMetadata: true}
+	// fmt.Print(p.ChannelID)
 	api := slack.New(TOKEN)
 
-	history, err := api.GetConversationHistory(p)
+	history, err := api.GetConversationHistory(&p)
 	if err != nil {
 		fmt.Printf("%s\n", err)
 		return

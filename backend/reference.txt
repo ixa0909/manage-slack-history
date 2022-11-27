@@ -5,9 +5,15 @@ https://api.slack.com/methods
 
 slack-go github
 https://github.com/slack-go/slack
+slack-go go 公式ドキュメント
+https://pkg.go.dev/github.com/slack-go/slack
 
+メッセージ送信　コマンドで
+https://zenn.dev/kou_pg_0131/articles/slack-api-post-message
+sh での .env ファイルの読み込み
+https://webbibouroku.com/Blog/Article/linux-dotenv
 
-エラー対策集
+エラー対応集
 
 ・MAC で urllib をすると出るらしい
 urllib.error.URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:992)>

@@ -34,3 +34,6 @@ USER
 https://free-engineer.life/golang-encoding-json-blog/
 jsonへのエンコーディングはバイナリ型が返ってくるのでそのまま表示すると数字の羅列になるので
 %s で表示する
+
+・slack 公式サイトでのテスト
+https://api.slack.com/methods/conversations.history/test

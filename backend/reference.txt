@@ -1,17 +1,24 @@
-slack api 公式サイト
+・slack api 公式サイト
 https://api.slack.com/
-method 集
+・method 集
 https://api.slack.com/methods
 
-slack-go github
+・slack-go github
 https://github.com/slack-go/slack
-slack-go go 公式ドキュメント
+・slack-go go 公式ドキュメント
 https://pkg.go.dev/github.com/slack-go/slack
 
-メッセージ送信　コマンドで
+・メッセージ送信　コマンドで
 https://zenn.dev/kou_pg_0131/articles/slack-api-post-message
 sh での .env ファイルの読み込み
 https://webbibouroku.com/Blog/Article/linux-dotenv
+
+・func (api *Client) GetConversationHistory
+  (params *GetConversationHistoryParameters)
+     (*GetConversationHistoryResponse, error)
+      を定義している slack-go 内のコードらへんへのリンク
+https://github.com/slack-go/slack/blob/v0.11.4/conversation.go#L595
+
 
 エラー対応集
 
@@ -22,3 +29,8 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 ・env 予約語に注意
 USER
+
+・json にエンコードせずに履歴を表示するとバグった表示になる
+https://free-engineer.life/golang-encoding-json-blog/
+jsonへのエンコーディングはバイナリ型が返ってくるのでそのまま表示すると数字の羅列になるので
+%s で表示する

@@ -5,5 +5,5 @@ source ./.env
 
 curl -X POST 'https://slack.com/api/chat.postMessage' \
 -d token=$SLACK_BOT_TOKEN \
--d channel=$CHANNEL_NAME \
--d text="*テキスト*"
+-d channel=$DEV_CHANNEL_NAME \
+-d text="*gargag*"

@@ -35,7 +35,7 @@ func main() {
 
 	godotenv.Load("./.env")
 	TOKEN := os.Getenv("SLACK_BOT_TOKEN")
-	CHANNEL_ID := os.Getenv("DEV_CHANNEL_ID")
+	CHANNEL_ID := os.Getenv("RANDOM_CHANNEL_ID")
 
 	p := slack.GetConversationHistoryParameters{ChannelID: CHANNEL_ID, Cursor: "", Inclusive: true, Latest: "", Limit: 1, Oldest: "", IncludeAllMetadata: false}
 	// fmt.Print(p.ChannelID)
@@ -48,6 +48,6 @@ func main() {
 	}
 
 	// json にエンコードする必要があった
-	b,err:=json.Marshal(history)
+	b, err := json.Marshal(history)
 	fmt.Printf("%s\n", b)
 }

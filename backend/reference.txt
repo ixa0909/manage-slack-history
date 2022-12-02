@@ -19,6 +19,9 @@ https://webbibouroku.com/Blog/Article/linux-dotenv
       を定義している slack-go 内のコードらへんへのリンク
 https://github.com/slack-go/slack/blob/v0.11.4/conversation.go#L595
 
+・一定期間ごとに操作を実行
+https://qiita.com/tetsu_koba/items/1599408f537cb513b250
+
 
 エラー対応集
 
@@ -37,3 +40,6 @@ jsonへのエンコーディングはバイナリ型が返ってくるのでそ�
 
 ・slack 公式サイトでのテスト
 https://api.slack.com/methods/conversations.history/test
+
+・print で　％ が出る
+Print にすると最後に%が表示される　読み込みファイルの最後に改行があれば出ない

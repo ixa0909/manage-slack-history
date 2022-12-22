@@ -5,10 +5,10 @@ import json
 
 load_dotenv(override=True)
 
-channel_id = os.getenv("CHANNEL")
+channel_id = os.getenv("DEV_CHANNEL_ID")
 # https://api.slack.com/methods/conversations.history
 url="https://slack.com/api/conversations.history"
-token=os.getenv("SLACK_BOT_TOKEN")
+token=os.getenv("SLACK_USER_TOKEN")
 
 # UNIX TIMESTAMP
 # https://www.unixtimestamp.com/

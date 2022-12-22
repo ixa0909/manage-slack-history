@@ -27,6 +27,11 @@ https://qiita.com/tetsu_koba/items/1599408f537cb513b250
 emoji python ライブラリ
 https://qiita.com/wholesomestar/items/64fa4b626e6d5e95b3d2
 
+Go の時刻フォーマットについて
+2006年01月02日
+01月02日03時45分2006年
+https://blog.toshimaru.net/go-time-format/
+
 エラー対応集
 
 ・MAC で urllib をすると出るらしい

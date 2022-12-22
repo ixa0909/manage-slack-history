@@ -4,6 +4,6 @@
 source ./.env
 
 curl -X POST 'https://slack.com/api/chat.postMessage' \
--d token=$SLACK_BOT_TOKEN \
+-d token=$SLACK_USER_TOKEN \
 -d channel=$DEV_CHANNEL_NAME \
 -d text="*gargag*"

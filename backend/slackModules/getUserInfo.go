@@ -1,4 +1,4 @@
-package main
+package slackModules
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/slack-go/slack"
 )
 
-func main() {
+func GetUserInfo() {
 	godotenv.Load("./.env")
 	TOKEN := os.Getenv("SLACK_BOT_TOKEN")
 	USER := os.Getenv("SLACK_USER")

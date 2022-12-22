@@ -18,7 +18,7 @@ func str2unix(t string) int64 {
 }
 
 func main() {
-	var strTime string = "2022-12-03T01:29:00+09:00"
+	var strTime string = "2022-09-27T15:53:48+09:00"
 	fmt.Println(str2unix(strTime))
 	// 1648771200
 }

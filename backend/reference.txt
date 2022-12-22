@@ -2,6 +2,8 @@
 https://api.slack.com/
 ・method 集
 https://api.slack.com/methods
+・conversation history
+https://api.slack.com/methods/conversations.history
 
 ・slack-go github
 https://github.com/slack-go/slack
@@ -22,6 +24,8 @@ https://github.com/slack-go/slack/blob/v0.11.4/conversation.go#L595
 ・一定期間ごとに操作を実行
 https://qiita.com/tetsu_koba/items/1599408f537cb513b250
 
+emoji python ライブラリ
+https://qiita.com/wholesomestar/items/64fa4b626e6d5e95b3d2
 
 エラー対応集
 
@@ -43,3 +47,7 @@ https://api.slack.com/methods/conversations.history/test
 
 ・print で　％ が出る
 Print にすると最後に%が表示される　読み込みファイルの最後に改行があれば出ない
+
+・time.Parse が上手くいかない
+フォーマットが異なると0001-01-01 00:00:00 +0000 UTCに変換される
+https://qiita.com/ayasuda/items/39c6403fa855e4f9870b

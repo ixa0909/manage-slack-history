@@ -39,14 +39,18 @@ func timeToString(t time.Time) string {
 	str := t.Format("2006-01-02")
 	return str
 }
+func interfaceToString(t interface{}) string {
+	str := t.(string)
+	return str
+}
 func main() {
 
 	godotenv.Load("./.env")
 	TOKEN := os.Getenv("SLACK_USER_TOKEN")
 	CHANNEL_ID := os.Getenv("RANDOM_CHANNEL_ID")
 
-	fromDate, _ := time.Parse("2006-01-02 (JST)", "2022-09-27 (JST)")
-	toDate, _ := time.Parse("2006-01-02 (JST)", "2022-12-21 (JST)")
+	fromDate, _ := time.Parse("2006-01-02 (JST)", "2022-12-16 (JST)")
+	toDate, _ := time.Parse("2006-01-02 (JST)", "2022-12-22 (JST)")
 
 	for date := fromDate; date.Unix() < toDate.Unix(); date = date.AddDate(0, 0, 1) {
 		oldest := strconv.FormatInt(strToUnix(date), 10)
@@ -70,13 +74,20 @@ func main() {
 
 		b, err := json.Marshal(history)
 		json.Unmarshal([]byte(b), &mapData)
+
 		// ファイル名のため
 		s, _ := time.Parse("2006-01-02", timeToString(date))
-		
-		f, err := os.Create(timeToString(s)[0:10]+".json")
+
+		isNone, _ := json.Marshal(mapData["messages"])
+		if string(isNone) == "[]" {
+			continue
+		}
+		fmt.Print(string(isNone))
+
+		f, err := os.Create(timeToString(s)[0:10] + ".json")
 		f.Write(b)
 		defer f.Close()
-		
+
 	}
 
 }

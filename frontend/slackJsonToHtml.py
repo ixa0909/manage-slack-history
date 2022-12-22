@@ -25,7 +25,7 @@ def date_range(start, stop, step=timedelta(1)):
 
 
 # 日付を指定する必要がある
-dayStart = date(2022,9,27)
+dayStart = date(2022,12,16)
 dayEnd = date(2022,12,21)
 
 for date in date_range(dayStart, dayEnd):
@@ -185,7 +185,7 @@ for date in date_range(dayStart, dayEnd):
             fCh.write("<br><br>")
 
     except:
-        print(traceback.format_exc())
+        # print(traceback.format_exc())
         # 該当する日付の JSON ファイルがなかった時
         pass
 

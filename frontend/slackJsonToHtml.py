@@ -25,7 +25,7 @@ def date_range(start, stop, step=timedelta(1)):
 
 
 # 日付を指定する必要がある
-dayStart = date(2022,12,16)
+dayStart = date(2022,10,16)
 dayEnd = date(2022,12,21)
 
 for date in date_range(dayStart, dayEnd):

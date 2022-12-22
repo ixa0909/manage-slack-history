@@ -11,6 +11,18 @@ import (
 	"github.com/slack-go/slack"
 )
 
+func main() {
+	ticker := time.NewTicker(time.Millisecond * 1000 * 60)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			doPeriodically()
+		}
+	}
+	// doPeriodically()
+}
+
 // 履歴を取る関数の引数の構造体定義部分
 // type GetConversationHistoryParameters struct {
 // 	ChannelID          string
@@ -43,16 +55,20 @@ func interfaceToString(t interface{}) string {
 	str := t.(string)
 	return str
 }
-func main() {
+func doPeriodically() {
 
 	godotenv.Load("./.env")
 	TOKEN := os.Getenv("SLACK_USER_TOKEN")
 	CHANNEL_ID := os.Getenv("RANDOM_CHANNEL_ID")
 
-	fromDate, _ := time.Parse("2006-01-02 (JST)", "2022-12-16 (JST)")
-	toDate, _ := time.Parse("2006-01-02 (JST)", "2022-12-22 (JST)")
+	// fromDate, _ := time.Parse("2006-01-02 (JST)", "2022-10-02 (JST)")
+	fromDate, _ := time.Parse("2006-01-02", timeToString(time.Now().AddDate(0, 0, -20)))
+	// toDate, _ := time.Parse("2006-01-02 (JST)", "2022-12-20 (JST)")
+	toDate := fromDate.AddDate(0, 0, 20)
+	fmt.Print(timeToString(time.Now().AddDate(0, 0, -20)))
 
-	for date := fromDate; date.Unix() < toDate.Unix(); date = date.AddDate(0, 0, 1) {
+	for date := fromDate; date.Unix() <= toDate.Unix(); date = date.AddDate(0, 0, 1) {
+		time.Sleep(time.Second * 2)
 		oldest := strconv.FormatInt(strToUnix(date), 10)
 
 		end := date.AddDate(0, 0, 1)
@@ -68,8 +84,6 @@ func main() {
 			return
 		}
 		// json にエンコードする必要があった
-		// b, err := json.Marshal(history)
-		// fmt.Printf("%s\n", b)
 		var mapData map[string]interface{}
 
 		b, err := json.Marshal(history)
@@ -82,7 +96,7 @@ func main() {
 		if string(isNone) == "[]" {
 			continue
 		}
-		fmt.Print(string(isNone))
+		// fmt.Print(string(isNone))
 
 		f, err := os.Create(timeToString(s)[0:10] + ".json")
 		f.Write(b)

@@ -1,3 +1,6 @@
+https://github.com/slack-go/slack/blob/v0.12.1/conversation.go#L502
+https://github.com/slack-go/slack/blob/v0.12.1/users.go#L384
+https://github.com/slack-go/slack/blob/v0.12.1/emoji.go#L14
 GetConversationHistoryParameters
 ```Go
 type GetConversationHistoryParameters struct {

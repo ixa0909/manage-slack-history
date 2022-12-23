@@ -6,18 +6,17 @@ import json
 import traceback
 from datetime import date, timedelta
 import emoji
+from dateutil.relativedelta import relativedelta
 
 # チャンネル名
-chunnel = "sample"
+chunnel = "general"
 
 # 変換先のマークダウンファイル
 writeFileName = chunnel+".md"
 fCh = open(writeFileName, mode="w")
 
 # for 文を日付でまわすための関数
-
-
-def date_range(start, stop, step=timedelta(1)):
+def date_range(start, stop, step=relativedelta(months=1)):
     current = start
     while current < stop:
         yield current
@@ -25,15 +24,16 @@ def date_range(start, stop, step=timedelta(1)):
 
 
 # 日付を指定する必要がある
-dayStart = date(2022,10,16)
-dayEnd = date(2022,12,21)
+dayStart = date(2022,10,1)
+dayEnd = date(2022,12,1)
 
 for date in date_range(dayStart, dayEnd):
-    date = str(date)
+    date = str(date)[0:7]
+    print(date)
 
     try:
-        # fileName = "./"+chunnel+"/"+str(date)+".json"
-        fileName = "/Users/kazuki_yabuuchi/Documents/GitHub/slackHistory/backend/"+str(date)+".json"
+        fileName = "../backend/main/"+chunnel+"/"+str(date)+".json"
+    
         f = open(fileName, "r", encoding="utf-8")
         fLoad = json.load(f)
         fCh.write("<br>")

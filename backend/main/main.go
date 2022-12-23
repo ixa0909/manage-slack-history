@@ -2,6 +2,7 @@ package main
 
 import (
 	"time"
+
 	"example.com/slackModules"
 )
 
@@ -13,13 +14,23 @@ func main() {
 	defer ticker.Stop()
 
 	// 初回の履歴取得
-	slackModules.GetHistory()
+	slackModules.GetChannelsInfo()
+	// チャンネル名とチャンネル ID を取得
+	mapChannels := slackModules.ReadChannelsInfo()
+	slackModules.GetUsersInfo()
+	slackModules.GetEmojiInfo()
+	slackModules.GetHistory(mapChannels)
 
 	// 無限ループで一定期間ごとに getHistory() を実行
 	for {
 		select {
 		case <-ticker.C:
-			slackModules.GetHistory()
+			slackModules.GetChannelsInfo()
+			// チャンネル名とチャンネル ID を取得
+			mapChannels := slackModules.ReadChannelsInfo()
+			slackModules.GetUsersInfo()
+			slackModules.GetEmojiInfo()
+			slackModules.GetHistory(mapChannels)
 		}
 	}
 

@@ -8,14 +8,14 @@ import (
 	"github.com/slack-go/slack"
 )
 
-func main() {
+func GetEmojiInfo() {
 	godotenv.Load("./.env")
 	TOKEN := os.Getenv("SLACK_USER_TOKEN")
 	api := slack.New(TOKEN)
 
 	emojis, _ := api.GetEmoji()
 	b, _ := json.Marshal(emojis)
-	fileName := "emojis.json"
+	fileName := "../../frontend/emojis.json"
 	file, _ := os.Create(fileName)
 	file.Write(b)
 	defer file.Close()

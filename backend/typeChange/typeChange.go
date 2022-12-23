@@ -9,6 +9,6 @@ func StrToUnix(t time.Time) int64 {
 }
 // time.Time → string
 func TimeToString(t time.Time) string {
-	str := t.Format("2006-01-02")
+	str := t.Format("2006-01")
 	return str
 }

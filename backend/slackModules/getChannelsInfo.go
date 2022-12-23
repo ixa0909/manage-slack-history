@@ -8,7 +8,7 @@ import (
 	"github.com/slack-go/slack"
 )
 
-func main() {
+func GetChannelsInfo() {
 	godotenv.Load("./.env")
 	TOKEN := os.Getenv("SLACK_USER_TOKEN")
 	api := slack.New(TOKEN)

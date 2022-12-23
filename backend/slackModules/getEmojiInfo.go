@@ -1,4 +1,4 @@
-package main
+package slackModules
 
 import (
 	"encoding/json"

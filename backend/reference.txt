@@ -32,6 +32,10 @@ Go の時刻フォーマットについて
 01月02日03時45分2006年
 https://blog.toshimaru.net/go-time-format/
 
+json ファイルからファイルのダウンロード URL だけ抽出
+cat *.json | grep "url_private_download" 最後の*があると上手くいかないので注意
+https://zenn.dev/f_latte_n/scraps/0b87b1e9be69d1
+
 エラー対応集
 
 ・MAC で urllib をすると出るらしい

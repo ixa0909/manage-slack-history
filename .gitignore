@@ -3,5 +3,6 @@ fig.drawio
 
 .env
 sample*
-
+*.html
+*.md
 *.json

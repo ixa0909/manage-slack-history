@@ -9,7 +9,7 @@ import emoji
 from dateutil.relativedelta import relativedelta
 
 # チャンネル名
-chunnel = "general"
+chunnel = "group-b3"
 
 # 変換先のマークダウンファイル
 writeFileName = chunnel+".md"

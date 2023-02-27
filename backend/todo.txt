@@ -1,9 +1,15 @@
 できる見込みがあるものは除く
 
 履歴を取得したときに返信が含まれているのか
+→含まれていない
 
 go で取得した際に[messages]だけにしたいが
 何かと一部データが消失する
 export したものと形式を合わせるため
 
 emoji に変換できないとこがある
+
+slackModules を github に公開する
+
+time.ticker で 24 hour * 30 を time.Month にしたい
+→保留

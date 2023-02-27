@@ -63,3 +63,11 @@ https://qiita.com/ayasuda/items/39c6403fa855e4f9870b
 
 ・json ファイルが配列型で記述されていて読み込めない
 https://blog.orangeliner.net/tech/golang-nested-json.html
+
+・main.go:5:2: found packages slackModules (getChannelsInfo.go) and main (getConversationsReplies.go) in /Users/kazuki_yabuuchi/Documents/GitHub/slackHistory/backend/slackModules
+package main が複数あると動かないので注意
+main.go 以外の go ファイルで package main としていたので動かなかった
+
+・ローカルにある自作のパッケージを使う場合はコマンドにこれを打つ go mod init <プロジェクト名> をした後に
+go mod edit -replace=slackModules=../slackModules
+打たないと go mod tidy できない

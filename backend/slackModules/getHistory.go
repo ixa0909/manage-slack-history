@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"example.com/typeChange"
+	"typeChange"
 	"github.com/joho/godotenv"
 	"github.com/slack-go/slack"
 )
@@ -25,9 +25,6 @@ func GetHistory(mapChannels map[string]string) {
 		CHANNEL_ID := v
 		// k = "random"
 		// v = "C3PRX5C9H"
-
-
-		
 
 		// 取得開始日と取得終了日 time.Parse(フォーマット,時刻)
 		fromDate, _ := time.Parse("2006-01", typeChange.TimeToString(time.Now().AddDate(0, -2, 0)))

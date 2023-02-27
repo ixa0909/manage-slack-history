@@ -1,4 +1,4 @@
-package main
+package slackModules
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"example.com/typeChange"
+	"typeChange"
 	"github.com/joho/godotenv"
 	"github.com/slack-go/slack"
 )

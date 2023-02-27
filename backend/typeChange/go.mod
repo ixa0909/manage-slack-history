@@ -1,3 +1,3 @@
-module example.com/typeChange
+module typeChange
 
 go 1.18

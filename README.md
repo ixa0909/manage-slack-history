@@ -147,3 +147,14 @@ JSON → Markdown → HTML の順で変換していますが<br>
 
 - 全体の流れや作業を確認
 - 各チャンネルの履歴を並行して出力させる
+
+
+### go 
+```
+go mod init main
+go mod edit -replace=typeChange=../typeChange
+go mod edit -replace=slackModules=../slackModules
+go mod tidy
+go build
+./main
+```

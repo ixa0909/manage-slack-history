@@ -1,12 +1,13 @@
 package main
 
 import (
+	"fmt"
+	"slackModules"
 	"time"
-
-	"example.com/slackModules"
 )
 
 func main() {
+	fmt.Println("q")
 	// 時間間隔を設定 30 日ごと
 	ticker := time.NewTicker(time.Hour * 24 * 30)
 

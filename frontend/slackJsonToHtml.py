@@ -110,6 +110,16 @@ for CHANNEL_INFO in fLoad:
             htmlFile.write(head)
             htmlFile.close()
 
+            htmlIndexFileName = "../index.html"
+            htmlIndexFile = open(htmlIndexFileName, mode="a")
+            htmlLink = """
+            <div>
+                <a href="./html/"""+CHANNEL_NAME+""".html">"""+CHANNEL_NAME+"""</a>
+            </div>
+            """
+            htmlIndexFile.write(htmlLink)
+            htmlIndexFile.close()
+
         htmlFile = open(htmlFileName, mode="a")
 
         f = open(fileName, "r", encoding="utf-8")

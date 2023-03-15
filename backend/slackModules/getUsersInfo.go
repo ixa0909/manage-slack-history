@@ -15,7 +15,7 @@ func GetUsersInfo() {
 
 	users, _ := api.GetUsers()
 	b, _ := json.Marshal(users)
-	fileName := "../../frontend/users.json"
+	fileName := "../../data/users.json"
 	file, _ := os.Create(fileName)
 	file.Write(b)
 	defer file.Close()

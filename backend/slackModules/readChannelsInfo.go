@@ -45,7 +45,7 @@ type ChannelsInfo struct {
 }
 
 func ReadChannelsInfo() map[string]string {
-	file, err := ioutil.ReadFile("channels.json")
+	file, err := ioutil.ReadFile("../../data/channels.json")
 	if err != nil {
 		// エラー処理
 	}

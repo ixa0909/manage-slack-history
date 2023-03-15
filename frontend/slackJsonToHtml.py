@@ -7,15 +7,11 @@ import traceback
 from datetime import date, timedelta
 import emoji
 from dateutil.relativedelta import relativedelta
+import datetime
+import os
 
-# チャンネル名
-chunnel = "group-b3"
+# for 文を日付でまわすための関数 一ヶ月ごと
 
-# 変換先のマークダウンファイル
-writeFileName = chunnel+".md"
-fCh = open(writeFileName, mode="w")
-
-# for 文を日付でまわすための関数
 def date_range(start, stop, step=relativedelta(months=1)):
     current = start
     while current < stop:
@@ -23,203 +19,172 @@ def date_range(start, stop, step=relativedelta(months=1)):
         current += step
 
 
-# 日付を指定する必要がある
-dayStart = date(2022,10,1)
-dayEnd = date(2022,12,1)
+def writeFile(elements, file):
+    if elements["type"] == "text":
+        text = elements["text"].replace("\n", "<br>").replace(
+            "#", "\#").replace("    ", "")
+        if "style" in elements.keys():
+            style = elements["style"]
+            if style.get("bold") == True:
+                file.write("<strong>"+text+"</strong>")
+            elif style.get("code") == True:
+                file.write("<code>"+text+"</code>")
+            elif style.get("strike") == True:
+                file.write("<strike>"+text+"</strike>")
+            else:
+                file.write(text)
+        else:
+            file.write(text)
 
-for date in date_range(dayStart, dayEnd):
-    date = str(date)[0:7]
-    print(date)
+    elif elements["type"] == "link":
+        link = elements["url"]
+        file.write("<a href='"+link+"'>"+link+"</a>\n")
+    elif elements["type"] == "emoji":
+        name = elements["name"]
+        if name == "man-bowing":
+            name = "bowing_man"
+        if name == "woman-bowing":
+            name = "bowing_woman"
+        file.write(emoji.emojize(':'+name+':', language='alias'))
+    elif elements["type"] == "user":
+        file.write("@"+elements["user_id"])
+    elif elements["type"] == "broadcast":
+        file.write("@"+elements["range"])
+    elif elements["type"] == "channel":
+        file.write("\#"+elements["channel_id"])
 
-    try:
-        fileName = "../backend/main/"+chunnel+"/"+str(date)+".json"
-    
+
+# マークダウンから html ファイルに変更するのは絵文字を表示するためである詳細は省く
+channelFile = open("../data/channels.json", "r")
+fLoad = json.load(channelFile)
+channelFile.close()
+
+for CHANNEL_INFO in fLoad:
+    CHANNEL_ID = CHANNEL_INFO["id"]
+    CHANNEL_NAME = CHANNEL_INFO["name"]
+
+    today = datetime.date.today()
+    twoMonthAgo = today+relativedelta(months=-2)
+
+    fromMonth = date(twoMonthAgo.year, twoMonthAgo.month, 1)
+    toMonth = date(today.year, today.month, 1)
+
+    frag = False
+
+    for month in date_range(fromMonth, toMonth):
+        month = str(month)[0:7]
+        fileName = "../data/"+CHANNEL_NAME+"/"+str(month)+".json"
+        if os.path.isfile(fileName):
+            frag = True
+            break
+    if frag == False:
+        continue
+
+    for month in date_range(fromMonth, toMonth):
+        month = str(month)[0:7]
+        fileName = "../data/"+CHANNEL_NAME+"/"+str(month)+".json"
+
+        if os.path.isfile(fileName) != True:
+            continue
+
+        # 変換先のマークダウンファイル 追記モード
+        mdFileName = "../markdown/"+CHANNEL_NAME+".md"
+        mdFile = open(mdFileName, mode="a")
+
         f = open(fileName, "r", encoding="utf-8")
         fLoad = json.load(f)
-        fCh.write("<br>")
-        fCh.write('\n<h3>')
-        fCh.write(date)
-        fCh.write("</h3>\n")
-        
-        # go で取得した場合は変換する
-        try:
-            fLoad=fLoad["messages"]
-        except:
-            pass
+        mdFile.write("<br>\n<h3>"+month+"</h3>\n")
 
-        # try and except を酷使してデータを抽出
-        # リアクションや返信であるかなどは未対応
-        for j in range(len(fLoad)):
+        fLoad = fLoad["messages"]
 
-            datas = fLoad[j]
+        for datas in list(reversed(fLoad)):
 
-            try:
-                fCh.write(datas["user"])
-            except:
-                fCh.write(datas["username"])
+            mdFile.write("<br><br>"+str(datas.get("user"))+"<br>")
+
+            if "username" in datas.keys():
+                mdFile.write("<br><br>"+datas.get("username")+"<br>")
                 if datas["username"] == "Trello":
-                    fCh.write("<br>"+datas["attachments"]
-                              [0]["fallback"]+"<br>")
-                    fCh.write(datas["attachments"][0]["text"])
-            try:
-                fCh.write("<br>"+datas["files"][0]["name"])
-                fCh.write("<br>\n")
-            except:
-                pass
-            try:
-                if datas["files"][0]["mode"] == "hidden_by_limit":
-                    fCh.write("<br>ファイルの容量制限（以前は制限があった。）のため削除されました。\n")
-            except:
-                pass
+                    mdFile.write("<br>"+datas["attachments"]
+                                 [0]["fallback"]+"<br>")
+                    mdFile.write(datas["attachments"][0]["text"])
+                    continue
+            if "files" in datas.keys():
+                files = datas["files"]
+                mdFile.write("<br>"+files[0]["name"]+"<br>\n")
+                if files[0].get("mode") == "hidden_by_limit":
+                    mdFile.write("<br>ファイルの容量制限（以前は制限があった。）のため削除されました。\n")
 
-            fCh.write("<br>\n")
+            if datas.get("subtype") == "channel_join":
+                mdFile.write(datas["text"])
+                continue
 
-            # ユーザー名がある時がたまにある
-            # try:
-            #     print(datas["user_profile"]["real_name"])
-            # except:
-            #     pass
+            if datas.get("subtype") == "bot_message":
+                mdFile.write(datas["attachments"][0]["fallback"])
+                continue
 
-            try:
-                for data in datas["blocks"]:
-                    try:
-                        ele1s = data["elements"]
-                        for ele1 in ele1s:
-                            for ele2 in ele1["elements"]:
-                                if ele2["type"] == "text":
-                                    try:
-                                        if ele2["style"]["bold"] == True:
-                                            fCh.write("<strong>"+ele2["text"].replace("\n", "<br>").replace(
-                                                "#", "\#").replace("    ", "")+"</strong>")
-                                    except:
-                                        try:
-                                            if ele2["style"]["code"] == True:
-                                                fCh.write("<code>"+ele2["text"].replace("\n", "<br>").replace(
-                                                    "#", "\#").replace("    ", "")+"</code>")
-                                        except:
-                                            fCh.write(ele2["text"].replace("\n", "<br>").replace(
-                                                "#", "\#").replace("    ", ""))
-
-                                elif ele2["type"] == "link":
-                                    # print(ele2["url"])
-                                    fCh.write("<a href='"+ele2["url"]+"'>")
-                                    fCh.write(ele2["url"])
-                                    fCh.write("</a>")
-                                    fCh.write("\n")
-                                elif ele2["type"] == "emoji":
-                                    fCh.write(emoji.emojize(":"+ele2["name"]+":"))
-                                elif ele2["type"] == "user":
-                                    fCh.write("@"+ele2["user_id"])
-                                elif ele2["type"] == "broadcast":
-                                    fCh.write("@"+ele2["range"])
-                                elif ele2["type"] == "channel":
-                                    fCh.write("\#"+ele2["channel_id"])
-                                elif ele2["type"] == "rich_text_section":
-                                    for ele3 in ele2["elements"]:
-                                        if ele3["type"] == "text":
-                                            try:
-                                                if ele3["style"]["bold"] == True:
-                                                    fCh.write("<strong>"+ele3["text"].replace("\n", "<br>").replace(
-                                                        "#", "\#").replace("    ", "")+"</strong>")
-                                            except:
-                                                try:
-                                                    if ele3["style"]["code"] == True:
-                                                        fCh.write("<code>"+ele3["text"].replace("\n", "<br>").replace(
-                                                            "#", "\#").replace("    ", "")+"</code>")
-                                                except:
-                                                    fCh.write(ele3["text"].replace("\n", "<br>").replace(
-                                                        "#", "\#").replace("    ", ""))
-
-                                        elif ele3["type"] == "link":
-                                            # print(ele3["url"])
-                                            fCh.write(
-                                                "<a href='"+ele3["url"]+"'>")
-                                            fCh.write(ele3["url"])
-                                            fCh.write("</a>")
-                                            fCh.write("\n")
-                                        elif ele3["type"] == "emoji":
-                                            fCh.write(emoji.emojize(":"+ele3["name"]+":"))
-                                        elif ele3["type"] == "user":
-                                            fCh.write("@"+ele3["user_id"])
-                                        elif ele3["type"] == "broadcast":
-                                            fCh.write("@"+ele3["range"])
-                                        elif ele3["type"] == "channel":
-                                            fCh.write("\#"+ele3["channel_id"])
-                                        else:
-                                            print(date)
-                                            try:
-                                                print(datas["user"])
-                                            except:
-                                                print(datas["username"])
-                                            print(ele3)
-
-                                else:
-                                    print(date)
-                                    try:
-                                        print(datas["user"])
-                                    except:
-                                        print(datas["username"])
-                                    print(ele2)
-
-                            fCh.write("<br>")
-
-                    except:
-                        print(date)
-                        try:
-                            print(datas["user"])
-                        except:
-                            print(datas["username"])
-                        print(ele1)
-                        print(traceback.format_exc())
-                        pass
-
-            except:
-                fCh.write(datas["text"].replace(
-                    "\n\t", "<br>\n").replace("#", "/#"))
-
+            if "blocks" not in datas.keys():
+                continue
+            elif datas["blocks"] == None:
+                continue
+            else:
                 try:
-                    fCh.write(datas["files"][0]["name"])
+                    blocks = datas["blocks"][0]
                 except:
-                    pass
-                f.close()
-            fCh.write("<br><br>")
+                    print(datas)
+                    print(CHANNEL_NAME)
+                    exit()
 
-    except:
-        # print(traceback.format_exc())
-        # 該当する日付の JSON ファイルがなかった時
-        pass
+            if "elements" not in blocks.keys():
+                continue
+            else:
+                elements = blocks["elements"][0]
 
+            if elements.get("type") == "rich_text_section":
+                elements = elements.get("elements")
+                for element in elements:
+                    writeFile(element, mdFile)
+                continue
 
-fCh.close()
+            if "elements" not in elements.keys():
+                continue
+            else:
+                elements = elements["elements"][0]
 
-# マークダウンファイルを HTML に変換
+            writeFile(elements, mdFile)
 
-head = """<!DOCTYPE html>
-<meta charset="UTF-8">
-<html>
-<head>
-   <link rel="stylesheet" href="style.css">
-</head>
-<header>
-   <div class ="title">
-      <h1>"""+chunnel+"""</h1>
-   </div>
-</header>
+        f.close()
+        mdFile.close()
 
-<body>"""
+    # マークダウンファイルを HTML に変換
+    head = """
+    <!DOCTYPE html>
+    <meta charset="UTF-8">
+    <html>
+    <head>
+    <link rel="stylesheet" href="style.css">
+    </head>
+    <header>
+    <div class ="title">
+        <h1>"""+CHANNEL_NAME+"""</h1>
+    </div>
+    </header>
 
-tail = """
-</body>
-</html>"""
+    <body>
+    """
+    if os.path.isfile(mdFileName):
+        mdFile = open(mdFileName, "r")
 
-f = open(writeFileName, "r")
-fHtml = open(chunnel+".html", "w")
-lines = f.read()
+        htmlFile = "../html/"+CHANNEL_NAME+".html"
+        if os.path.isfile(htmlFile):
+            fHtml = open(htmlFile, "a")
+        else:
+            fHtml = open(htmlFile, "w")
+            fHtml.write(head)
 
-md = markdown.Markdown()
-fHtml.write(head)
-fHtml.write(md.convert(lines))
-fHtml.write(tail)
+        lines = mdFile.read()
+        mdFile.close()
 
-fHtml.close()
-f.close()
+        md = markdown.Markdown()
+
+        fHtml.write(md.convert(lines))
+        fHtml.close()

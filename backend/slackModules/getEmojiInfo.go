@@ -15,7 +15,7 @@ func GetEmojiInfo() {
 
 	emojis, _ := api.GetEmoji()
 	b, _ := json.Marshal(emojis)
-	fileName := "../../frontend/emojis.json"
+	fileName := "../../data/emojis.json"
 	file, _ := os.Create(fileName)
 	file.Write(b)
 	defer file.Close()

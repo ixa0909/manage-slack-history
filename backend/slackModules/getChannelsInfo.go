@@ -23,7 +23,7 @@ func GetChannelsInfo() {
 	}
 	channels, _, _ := api.GetConversations(&p)
 	b, _ := json.Marshal(channels)
-	fileName := "channels.json"
+	fileName := "../../data/channels.json"
 	file, _ := os.Create(fileName)
 	file.Write(b)
 	defer file.Close()

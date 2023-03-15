@@ -80,13 +80,13 @@ func GetHistory(mapChannels map[string]string) {
 			}
 
 			// チャンネルごとにディレクトリを作成
-			if err := os.MkdirAll(CHANNEL_NAME, 0777); err != nil {
+			if err := os.MkdirAll("../../data/"+CHANNEL_NAME, 0777); err != nil {
 				fmt.Println(err)
 			}
 
 			// 一ヶ月ごとに投稿履歴ファイルを作成して書き込み
 			fileMonth, _ := time.Parse("2006-01", typeChange.TimeToString(date))
-			fileName := CHANNEL_NAME + "/" + typeChange.TimeToString(fileMonth)[0:7] + ".json"
+			fileName := "../../data/"+CHANNEL_NAME + "/" + typeChange.TimeToString(fileMonth)[0:7] + ".json"
 			file, err := os.Create(fileName)
 			file.Write(b)
 			file.Close()

@@ -1,4 +1,4 @@
-module slackModules
+module slackModule
 
 go 1.18
 

@@ -70,4 +70,5 @@ main.go 以外の go ファイルで package main としていたので動かな
 
 ・ローカルにある自作のパッケージを使う場合はコマンドにこれを打つ go mod init <プロジェクト名> をした後に
 go mod edit -replace=slackModules=../slackModules
+go mod edit -replace=typeChange=../typeChange   
 打たないと go mod tidy できない

@@ -2,9 +2,9 @@ module main
 
 go 1.18
 
-replace typeChange => ../typeChange
-
 replace slackModules => ../slackModules
+
+replace typeChange => ../typeChange
 
 require slackModules v0.0.0-00010101000000-000000000000
 

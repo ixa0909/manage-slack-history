@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 # import
-import markdown
 import json
 import traceback
 from datetime import date, timedelta
@@ -10,8 +9,8 @@ from dateutil.relativedelta import relativedelta
 import datetime
 import os
 
-# for 文を日付でまわすための関数 一ヶ月ごと
 
+# for 文を日付でまわすための関数 一ヶ月ごと
 def date_range(start, stop, step=relativedelta(months=1)):
     current = start
     while current < stop:
@@ -87,39 +86,61 @@ for CHANNEL_INFO in fLoad:
         if os.path.isfile(fileName) != True:
             continue
 
-        # 変換先のマークダウンファイル 追記モード
-        mdFileName = "../markdown/"+CHANNEL_NAME+".md"
-        mdFile = open(mdFileName, mode="a")
+        # html の head
+        head = """
+        <!DOCTYPE html>
+        <meta charset="UTF-8">
+        <html>
+        <head>
+        <link rel="stylesheet" href="style.css">
+        </head>
+        <header>
+        <div class ="title">
+            <h1>"""+CHANNEL_NAME+"""</h1>
+        </div>
+        </header>
+
+        <body>
+        """
+
+        # html ファイル 追記モード
+        htmlFileName = "../html/"+CHANNEL_NAME+".html"
+        if os.path.isfile(htmlFileName) != True:
+            htmlFile = open(htmlFileName, mode="w")
+            htmlFile.write(head)
+            htmlFile.close()
+
+        htmlFile = open(htmlFileName, mode="a")
 
         f = open(fileName, "r", encoding="utf-8")
         fLoad = json.load(f)
-        mdFile.write("<br>\n<h3>"+month+"</h3>\n")
+        htmlFile.write("<br>\n<h3>"+month+"</h3>\n")
 
         fLoad = fLoad["messages"]
 
         for datas in list(reversed(fLoad)):
 
-            mdFile.write("<br><br>"+str(datas.get("user"))+"<br>")
+            htmlFile.write("<br><br>"+str(datas.get("user"))+"<br>")
 
             if "username" in datas.keys():
-                mdFile.write("<br><br>"+datas.get("username")+"<br>")
+                htmlFile.write("<br><br>"+datas.get("username")+"<br>")
                 if datas["username"] == "Trello":
-                    mdFile.write("<br>"+datas["attachments"]
-                                 [0]["fallback"]+"<br>")
-                    mdFile.write(datas["attachments"][0]["text"])
+                    htmlFile.write("<br>"+datas["attachments"]
+                                   [0]["fallback"]+"<br>")
+                    htmlFile.write(datas["attachments"][0]["text"])
                     continue
             if "files" in datas.keys():
                 files = datas["files"]
-                mdFile.write("<br>"+files[0]["name"]+"<br>\n")
+                htmlFile.write("<br>"+files[0]["name"]+"<br>\n")
                 if files[0].get("mode") == "hidden_by_limit":
-                    mdFile.write("<br>ファイルの容量制限（以前は制限があった。）のため削除されました。\n")
+                    htmlFile.write("<br>ファイルの容量制限（以前は制限があった。）のため削除されました。\n")
 
             if datas.get("subtype") == "channel_join":
-                mdFile.write(datas["text"])
+                htmlFile.write(datas["text"])
                 continue
 
             if datas.get("subtype") == "bot_message":
-                mdFile.write(datas["attachments"][0]["fallback"])
+                htmlFile.write(datas["attachments"][0]["fallback"])
                 continue
 
             if "blocks" not in datas.keys():
@@ -142,7 +163,7 @@ for CHANNEL_INFO in fLoad:
             if elements.get("type") == "rich_text_section":
                 elements = elements.get("elements")
                 for element in elements:
-                    writeFile(element, mdFile)
+                    writeFile(element, htmlFile)
                 continue
 
             if "elements" not in elements.keys():
@@ -150,41 +171,7 @@ for CHANNEL_INFO in fLoad:
             else:
                 elements = elements["elements"][0]
 
-            writeFile(elements, mdFile)
+            writeFile(elements, htmlFile)
 
         f.close()
-        mdFile.close()
-
-    # マークダウンファイルを HTML に変換
-    head = """
-    <!DOCTYPE html>
-    <meta charset="UTF-8">
-    <html>
-    <head>
-    <link rel="stylesheet" href="style.css">
-    </head>
-    <header>
-    <div class ="title">
-        <h1>"""+CHANNEL_NAME+"""</h1>
-    </div>
-    </header>
-
-    <body>
-    """
-    if os.path.isfile(mdFileName):
-        mdFile = open(mdFileName, "r")
-
-        htmlFile = "../html/"+CHANNEL_NAME+".html"
-        if os.path.isfile(htmlFile):
-            fHtml = open(htmlFile, "a")
-        else:
-            fHtml = open(htmlFile, "w")
-            fHtml.write(head)
-
-        lines = mdFile.read()
-        mdFile.close()
-
-        md = markdown.Markdown()
-
-        fHtml.write(md.convert(lines))
-        fHtml.close()
+        htmlFile.close()

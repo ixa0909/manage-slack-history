@@ -14,7 +14,7 @@ import (
 
 func main() {
 	// トークンやチャンネル ID をロード
-	godotenv.Load("./.env")
+	godotenv.Load("../../.env")
 	TOKEN := os.Getenv("SLACK_USER_TOKEN")
 	// api 宣言
 	api := slack.New(TOKEN)

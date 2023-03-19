@@ -9,7 +9,7 @@ import (
 )
 
 func PostMsg() {
-	godotenv.Load("./.env")
+	godotenv.Load("../../.env")
 	TOKEN := os.Getenv("SLACK_BOT_TOKEN")
 	DEV_CHANNEL := os.Getenv("DEV_CHANNEL")
 

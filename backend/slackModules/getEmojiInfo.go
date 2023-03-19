@@ -9,7 +9,7 @@ import (
 )
 
 func GetEmojiInfo() {
-	godotenv.Load("./.env")
+	godotenv.Load("../../.env")
 	TOKEN := os.Getenv("SLACK_USER_TOKEN")
 	api := slack.New(TOKEN)
 

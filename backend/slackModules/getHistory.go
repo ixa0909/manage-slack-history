@@ -22,7 +22,7 @@ import (
 func GetHistory(mapChannels map[string]string) {
 
 	// トークンとチャンネル ID をロード
-	godotenv.Load("./.env")
+	godotenv.Load("../../.env")
 	TOKEN := os.Getenv("SLACK_USER_TOKEN")
 
 	// Slack API 初期化

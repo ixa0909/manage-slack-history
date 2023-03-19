@@ -72,3 +72,8 @@ main.go 以外の go ファイルで package main としていたので動かな
 go mod edit -replace=slackModules=../slackModules
 go mod edit -replace=typeChange=../typeChange   
 打たないと go mod tidy できない
+
+・go mod tidy をした時に found ~ となって上手くいかない
+go mod tidy を再度する
+
+・addDays(0, 1, 0) は 30 日後なので注意 一ヶ月後ではない

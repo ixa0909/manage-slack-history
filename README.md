@@ -152,7 +152,12 @@ Slack/
 go mod init main
 go mod edit -replace=typeChange=../typeChange
 go mod edit -replace=slackModules=../slackModules
+go mod edit -replace=computeTime=../computeTime
 go mod tidy
 go build
 ./main
+```
+
+```
+go run ~.go
 ```

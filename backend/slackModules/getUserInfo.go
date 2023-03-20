@@ -9,7 +9,7 @@ import (
 )
 
 func GetUserInfo() {
-	godotenv.Load("./.env")
+	godotenv.Load("../../.env")
 	TOKEN := os.Getenv("SLACK_BOT_TOKEN")
 	USER := os.Getenv("SLACK_USER")
 	fmt.Print(USER)

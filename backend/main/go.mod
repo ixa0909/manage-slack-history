@@ -2,11 +2,16 @@ module main
 
 go 1.18
 
-replace slackModules => ../slackModules
-
 replace typeChange => ../typeChange
 
-require slackModules v0.0.0-00010101000000-000000000000
+replace slackModules => ../slackModules
+
+replace computeTime => ../computeTime
+
+require (
+	computeTime v0.0.0-00010101000000-000000000000
+	slackModules v0.0.0-00010101000000-000000000000
+)
 
 require (
 	github.com/gorilla/websocket v1.4.2 // indirect

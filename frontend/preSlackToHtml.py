@@ -10,7 +10,7 @@ import datetime
 import os
 
 
-# for 文を日付でまわすための関数 一ヶ月ごと
+# for 文を日付でまわすための関数 1 日ごと
 def date_range(start, stop, step=relativedelta(days=1)):
     current = start
     while current < stop:

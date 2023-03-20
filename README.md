@@ -135,14 +135,12 @@ Slack/
 ### 備考
 
 ### 進み具合
-返信を除けば timeticke を実装すれば一旦区切りがつく
-
+最低限の実装は終えた
+コード整形やテストが必要
 
 ### 次の作業
 
 - 実行環境をどうするのか
-- time ticker で定期的にプログラムを実行
-- 投稿に対する返信の履歴を取得できるようにする
 - フロントエンドを見やすくデザインする
 - コードの整理
 - ファイルも別でダウンロードして保存しておく
@@ -152,7 +150,12 @@ Slack/
 go mod init main
 go mod edit -replace=typeChange=../typeChange
 go mod edit -replace=slackModules=../slackModules
+go mod edit -replace=computeTime=../computeTime
 go mod tidy
 go build
 ./main
+```
+
+```
+go run ~.go
 ```

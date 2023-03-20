@@ -36,3 +36,8 @@ h1 {
 html {
   background-color: rgba(130, 184, 209, 0.5);
 }
+replies {
+  display: block;
+  width: 100%;
+  background-color: rgba(184, 209, 130, 0.5);
+}

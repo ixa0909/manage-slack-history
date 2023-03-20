@@ -87,7 +87,7 @@ def writeRepliesFile(replies, htmlFile, hasReplies):
 
     if hasReplies == False:
         return 0
-
+    htmlFile.write("<replies>\n")
     for reply in replies:
         # 送信者
         htmlFile.write("<br><br>"+str(reply.get("user"))+"<br>\n")
@@ -146,6 +146,8 @@ def writeRepliesFile(replies, htmlFile, hasReplies):
         # html ファイルへの書き込み
         writeFile(elements, htmlFile)
 
+    htmlFile.write("</replies>\n")
+
 
 # チャンネル一覧の読み込み
 channelFile = open("../data/channels.json", "r")
@@ -178,7 +180,7 @@ for CHANNEL_INFO in channels:
         # 新規メッセージが無ければ更新無し
         if os.path.isfile(fileName) != True:
             continue
-        print(CHANNEL_NAME,end=" ")
+        print(CHANNEL_NAME, end=" ")
 
         # html の先頭部分
         head = """

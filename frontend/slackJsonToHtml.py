@@ -111,7 +111,11 @@ def writeRepliesFile(replies, htmlFile, hasReplies):
                 htmlFile.write("<br>"+files.get("name")+"<br>\n")
                 if files.get("mode") == "hidden_by_limit":
                     htmlFile.write("<br>ファイルの容量制限（以前は制限があった。）のため削除されました。\n")
+        # チャンネル参加メッセージ
+        subtype = reply.get("subtype")
 
+        if subtype == "thread_broadcast":
+            pass
         # ボットのメッセージ
         elif subtype == "bot_message":
             htmlFile.write(reply["attachments"][0]["fallback"])
@@ -149,184 +153,204 @@ def writeRepliesFile(replies, htmlFile, hasReplies):
     htmlFile.write("</replies>\n")
 
 
-# チャンネル一覧の読み込み
-channelFile = open("../data/channels.json", "r")
-channels = json.load(channelFile)
-channelFile.close()
+def makeHtmlFile():
+    # チャンネル一覧の読み込み
+    channelFile = open("../data/channels.json", "r")
+    channels = json.load(channelFile)
+    channelFile.close()
 
-# 投稿に対する返信を取得する API の URL
-url = "https://slack.com/api/conversations.replies"
+    # 投稿に対する返信を取得する API の URL
+    url = "https://slack.com/api/conversations.replies"
 
-print("HTML への変換開始")
-print("対象チャンネル")
-# チャンネルごとに html を作成
-for CHANNEL_INFO in channels:
-    # チャンネル ID とチャンネル名
-    CHANNEL_ID = CHANNEL_INFO["id"]
-    CHANNEL_NAME = CHANNEL_INFO["name"]
+    print("対象チャンネル")
+    # チャンネルごとに html を作成
+    for CHANNEL_INFO in channels:
+        # チャンネル ID とチャンネル名
+        CHANNEL_ID = CHANNEL_INFO["id"]
+        CHANNEL_NAME = CHANNEL_INFO["name"]
 
-    # 今月と先月の初日 (1 日)
-    today = datetime.date.today()
-    MonthAgo = today+relativedelta(months=-1)
-    toMonth = date(today.year, today.month, 1)
-    fromMonth = date(MonthAgo.year, MonthAgo.month, 1)
+        # 今月と先月の初日 (1 日)
+        today = datetime.date.today()
+        MonthAgo = today+relativedelta(months=-1)
+        toMonth = date(today.year, today.month, 1)
+        fromMonth = date(MonthAgo.year, MonthAgo.month, 1)
 
-    # 1 ヶ月ごとに書き込み
-    for month in date_range(fromMonth, toMonth):
-        # 西暦と月を用いてファイル名を指定
-        month = str(month)[0:7]
-        fileName = "../data/"+CHANNEL_NAME+"/"+str(month)+".json"
+        # 1 ヶ月ごとに書き込み
+        for month in date_range(fromMonth, toMonth):
+            # 西暦と月を用いてファイル名を指定
+            month = str(month)[0:7]
+            fileName = "../data/"+CHANNEL_NAME+"/"+str(month)+".json"
 
-        # 新規メッセージが無ければ更新無し
-        if os.path.isfile(fileName) != True:
-            continue
-        print(CHANNEL_NAME, end=" ")
+            # 新規メッセージが無ければ更新無し
+            if os.path.isfile(fileName) != True:
+                continue
+            print(CHANNEL_NAME)
 
-        # html の先頭部分
-        head = """
-        <!DOCTYPE html>
-        <meta charset="UTF-8">
-        
-        <html>
-    
-            <head>
-            <link rel="stylesheet" href="style.css">
-            </head>
+            # html の先頭部分
+            head = """
+            <!DOCTYPE html>
+            <meta charset="UTF-8">
             
-            <header>
-            <div class ="title">
-                <h1>"""+CHANNEL_NAME+"""</h1>
-            </div>
-            </header>
+            <html>
+        
+                <head>
+                <link rel="stylesheet" href="style.css">
+                </head>
+                
+                <header>
+                <div class ="title">
+                    <h1>"""+CHANNEL_NAME+"""</h1>
+                </div>
+                </header>
 
-            <body>
-        """
+                <body>
+            """
 
-        # html ファイル
-        htmlFileName = "../html/"+CHANNEL_NAME+".html"
+            # html ファイル
+            htmlFileName = "../html/"+CHANNEL_NAME+".html"
 
-        # 新チャンネルの場合
-        if os.path.isfile(htmlFileName) != True:
-            # html ファイルを新規作成
-            htmlFile = open(htmlFileName, mode="w")
-            htmlFile.write(head)
+            # 新チャンネルの場合
+            if os.path.isfile(htmlFileName) != True:
+                # html ファイルを新規作成
+                htmlFile = open(htmlFileName, mode="w")
+                htmlFile.write(head)
+                htmlFile.close()
+
+                # 目次ページへの追記
+                htmlIndexFileName = "../index.html"
+                htmlIndexFile = open(htmlIndexFileName, mode="a")
+                # 各チャンネルごとのページへのリンク
+                htmlLink = """
+                <div>
+                    <a href="./html/"""+CHANNEL_NAME+""".html">"""+CHANNEL_NAME+"""</a>
+                </div>
+                """
+                htmlIndexFile.write(htmlLink)
+                htmlIndexFile.close()
+
+            # 履歴データの読み込み
+            f = open(fileName, "r", encoding="utf-8")
+            messages = json.load(f)["messages"]
+            f.close()
+
+            # メッセージを追記モードで書き込み
+            htmlFile = open(htmlFileName, mode="a")
+            htmlFile.write("<br>\n<h3>"+month+"</h3>\n")
+
+            # 各メッセージごとに処理 ※ データが新→古の順であるため逆順で処理
+            for datas in list(reversed(messages)):
+                # 送信者
+                htmlFile.write("<br><br>"+str(datas.get("user"))+"<br>\n")
+
+                # ユーザー名がある場合
+                if "username" in datas.keys():
+                    htmlFile.write("<br><br>"+datas.get("username")+"<br>")
+                    # Trello からの通知の場合
+                    if datas["username"] == "Trello":
+                        htmlFile.write("<br>"+datas["attachments"]
+                                       [0]["fallback"]+"<br>")
+                        htmlFile.write(datas["attachments"][0]["text"])
+
+                # ファイルを添付している場合
+                if "files" in datas.keys():
+                    files = datas["files"]
+                    htmlFile.write("<br>"+files[0]["name"]+"<br>\n")
+                    if files[0].get("mode") == "hidden_by_limit":
+                        htmlFile.write(
+                            "<br>ファイルの容量制限（以前は制限があった。）のため削除されました。\n")
+
+                # チャンネル参加メッセージ
+                subtype = datas.get("subtype")
+                if subtype == "channel_join":
+                    htmlFile.write(datas["text"])
+                # チャンネル退出メッセージ
+                elif subtype == "channel_exit":
+                    htmlFile.write(datas["text"])
+                # ボットのメッセージ
+                elif subtype == "thread_broadcast":
+                    pass
+                elif subtype == "bot_message":
+                    htmlFile.write(datas["attachments"][0]["fallback"])
+                elif subtype == None:
+                    pass
+                else:
+                    print(subtype)
+
+                # 投稿メッセージへの返信履歴の取得
+                if "reply_count" in datas.keys():
+                    hasReplies = True
+
+                    # 送信時刻 UNIX
+                    ts = datas["ts"]
+
+                    params = {
+                        "channel": CHANNEL_ID,
+                        "ts": ts,
+                        "inclusive": True
+                    }
+                    headersAuth = {
+                        "Authorization": "Bearer "+str(TOKEN),
+                    }
+                    # api を用いた返信履歴の取得
+                    response = requests.get(
+                        url, headers=headersAuth, params=params)
+                    # サーバ負荷対策
+                    sleep(2)
+                    replies = response.json()["messages"][1:]
+
+                else:
+                    hasReplies = False
+                    replies = 0
+
+                # テキストメッセージがない場合
+                if datas.get("blocks") == None:
+                    writeRepliesFile(replies, htmlFile, hasReplies)
+                    continue
+                # テキストメッセージがある場合
+                else:
+                    blocks = datas["blocks"][0]
+
+                if "elements" not in blocks.keys():
+                    writeRepliesFile(replies, htmlFile, hasReplies)
+                    continue
+                else:
+                    elements = blocks["elements"][0]
+
+                if elements.get("type") == "rich_text_section":
+                    elements = elements.get("elements")
+                    for element in elements:
+                        writeFile(element, htmlFile)
+                    writeRepliesFile(replies, htmlFile, hasReplies)
+                    continue
+
+                if "elements" not in elements.keys():
+                    writeRepliesFile(replies, htmlFile, hasReplies)
+                    continue
+                else:
+                    elements = elements["elements"][0]
+
+                # html ファイルへの書き込み
+                writeFile(elements, htmlFile)
+                writeRepliesFile(replies, htmlFile, hasReplies)
+
+            f.close()
             htmlFile.close()
 
-            # 目次ページへの追記
-            htmlIndexFileName = "../index.html"
-            htmlIndexFile = open(htmlIndexFileName, mode="a")
-            # 各チャンネルごとのページへのリンク
-            htmlLink = """
-            <div>
-                <a href="./html/"""+CHANNEL_NAME+""".html">"""+CHANNEL_NAME+"""</a>
-            </div>
-            """
-            htmlIndexFile.write(htmlLink)
-            htmlIndexFile.close()
 
-        # 履歴データの読み込み
-        f = open(fileName, "r", encoding="utf-8")
-        messages = json.load(f)["messages"]
-        f.close()
+# time ticker 初回実行まで時間を空けてから一ヶ月ごとに
+# 何日後に実行するのか
+print("初回の実行までの時間: ")
+initialTimer = int(input())
+print("日後にプログラムを実行")
 
-        # メッセージを追記モードで書き込み
-        htmlFile = open(htmlFileName, mode="a")
-        htmlFile.write("<br>\n<h3>"+month+"</h3>\n")
+sleep(initialTimer*3600)
 
-        # 各メッセージごとに処理 ※ データが新→古の順であるため逆順で処理
-        for datas in list(reversed(messages)):
-            # 送信者
-            htmlFile.write("<br><br>"+str(datas.get("user"))+"<br>\n")
-
-            # ユーザー名がある場合
-            if "username" in datas.keys():
-                htmlFile.write("<br><br>"+datas.get("username")+"<br>")
-                # Trello からの通知の場合
-                if datas["username"] == "Trello":
-                    htmlFile.write("<br>"+datas["attachments"]
-                                   [0]["fallback"]+"<br>")
-                    htmlFile.write(datas["attachments"][0]["text"])
-
-            # ファイルを添付している場合
-            if "files" in datas.keys():
-                files = datas["files"]
-                htmlFile.write("<br>"+files[0]["name"]+"<br>\n")
-                if files[0].get("mode") == "hidden_by_limit":
-                    htmlFile.write("<br>ファイルの容量制限（以前は制限があった。）のため削除されました。\n")
-
-            # チャンネル参加メッセージ
-            subtype = datas.get("subtype")
-            if subtype == "channel_join":
-                htmlFile.write(datas["text"])
-            # チャンネル退出メッセージ
-            elif subtype == "channel_exit":
-                htmlFile.write(datas["text"])
-            # ボットのメッセージ
-            elif subtype == "thread_broadcast":
-                pass
-            elif subtype == "bot_message":
-                htmlFile.write(datas["attachments"][0]["fallback"])
-            elif subtype == None:
-                pass
-            else:
-                print(subtype)
-
-            # 投稿メッセージへの返信履歴の取得
-            if "reply_count" in datas.keys():
-                hasReplies = True
-
-                # 送信時刻 UNIX
-                ts = datas["ts"]
-
-                params = {
-                    "channel": CHANNEL_ID,
-                    "ts": ts,
-                    "inclusive": True
-                }
-                headersAuth = {
-                    "Authorization": "Bearer "+str(TOKEN),
-                }
-                # api を用いた返信履歴の取得
-                response = requests.get(
-                    url, headers=headersAuth, params=params)
-                # サーバ負荷対策
-                sleep(2)
-                replies = response.json()["messages"][1:]
-
-            else:
-                hasReplies = False
-                replies = 0
-
-            # テキストメッセージがない場合
-            if datas.get("blocks") == None:
-                writeRepliesFile(replies, htmlFile, hasReplies)
-                continue
-            # テキストメッセージがある場合
-            else:
-                blocks = datas["blocks"][0]
-
-            if "elements" not in blocks.keys():
-                writeRepliesFile(replies, htmlFile, hasReplies)
-                continue
-            else:
-                elements = blocks["elements"][0]
-
-            if elements.get("type") == "rich_text_section":
-                elements = elements.get("elements")
-                for element in elements:
-                    writeFile(element, htmlFile)
-                writeRepliesFile(replies, htmlFile, hasReplies)
-                continue
-
-            if "elements" not in elements.keys():
-                writeRepliesFile(replies, htmlFile, hasReplies)
-                continue
-            else:
-                elements = elements["elements"][0]
-
-            # html ファイルへの書き込み
-            writeFile(elements, htmlFile)
-            writeRepliesFile(replies, htmlFile, hasReplies)
-
-        f.close()
-        htmlFile.close()
+while (1):
+    now = datetime.datetime.now()
+    print("HTML 記入開始: "+str(now))
+    afterMonth = now+relativedelta(months=1)
+    timer = (afterMonth-now).days*3600
+    makeHtmlFile()
+    print("記入終了: "+str(datetime.datetime.now()))
+    print("次回記入予定時刻: "+str(afterMonth))
+    sleep(timer)

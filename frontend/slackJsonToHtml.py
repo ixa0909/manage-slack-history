@@ -66,51 +66,58 @@ def writeFile(elements, file):
     # リンクの場合
     elif elements["type"] == "link":
         link = elements["url"]
-        writeln(file, "<a href='"+link+"'>"+link+"</a>")
+        writeln(file, "<url><a href='"+link+"'>"+link+"</a></url>")
 
     # 絵文字の場合
     elif elements["type"] == "emoji":
         name = elements["name"].replace(
             "man-bowing", "bowing_man").replace("woman-bowing", "bowing_woman")
-        file.write(emoji.emojize(':'+name+':', language='alias'))
+        file.write("<emoji>"+emoji.emojize(':'+name +
+                   ':', language='alias')+"</emoji>")
 
     # メンションの場合
     elif elements["type"] == "user":
-        file.write("@"+elements["user_id"])
+        file.write("<mention>"+"@"+elements["user_id"]+"</mention>")
     elif elements["type"] == "broadcast":
-        file.write("@"+elements["range"])
+        file.write("<mention>"+"@"+elements["range"]+"</mention>")
     elif elements["type"] == "channel":
-        file.write("\#"+elements["channel_id"])
+        file.write("<mention>"+"\#"+elements["channel_id"]+"</mention>")
 
 
-def writeRepliesFile(replies, htmlFile, hasReplies):
+def writeRepliesFile(replies, htmlFile, hasReplies,channel_name,reply_id):
 
     if hasReplies == False:
         return 0
-    htmlFile.write("<replies>\n")
+    
+    id = channel_name +"-"+reply_id
+    htmlFile.write("\n<br><input type=\"button\" value=\"返信\" onclick=\"test(\'"+id+"\')\">")
+    
+    htmlFile.write("<replies id=\'"+id+"\'>\n")
     for reply in replies:
-        # 送信者
-        htmlFile.write("<br><br>"+str(reply.get("user"))+"<br>\n")
+        # 送信者のユーザーID
+        htmlFile.write("<br><br>"+"<user>" +
+                       str(reply.get("user"))+"</user>"+"<br>\n")
 
         # ユーザー名がある場合
         if "username" in reply.keys():
-            htmlFile.write("<br><br>"+reply.get("username")+"<br>")
+            htmlFile.write("<br><br>"+"<user>" +
+                           reply.get("username")+"</user>"+"<br>")
             # Trello からの通知の場合
             if reply["username"] == "Trello":
-                htmlFile.write("<br>"+reply["attachments"]
-                               [0]["fallback"]+"<br>")
-                htmlFile.write(reply["attachments"][0]["text"])
+                htmlFile.write("<trello>"+"<br>"+reply["attachments"]
+                               [0]["fallback"]+"<br>"+reply["attachments"][0]["text"]+"</trello>")
 
         # ファイルを添付している場合
         if "files" in reply.keys():
             files = reply["files"][0]
             if files.get("mode") == "tombstone":
-                htmlFile.write("<br>表示期間が終了しています<br>\n")
-                htmlFile.write("<br>"+"ファイル ID: "+files.get("id")+"<br>\n")
+                htmlFile.write("<br>表示期間が終了しています<br>\n"+"<br>" +
+                               "ファイル ID: "+files.get("id")+"<br>\n")
             else:
-                htmlFile.write("<br>"+files.get("name")+"<br>\n")
+                htmlFile.write("<br><file>"+files.get("name")+"</file><br>\n")
                 if files.get("mode") == "hidden_by_limit":
-                    htmlFile.write("<br>ファイルの容量制限（以前は制限があった。）のため削除されました。\n")
+                    # 以前のプランではファイルの容量制限により過去のファイルが削除されていた
+                    htmlFile.write("<br>ファイルの容量制限による非表示\n")
         # チャンネル参加メッセージ
         subtype = reply.get("subtype")
 
@@ -118,10 +125,12 @@ def writeRepliesFile(replies, htmlFile, hasReplies):
             pass
         # ボットのメッセージ
         elif subtype == "bot_message":
-            htmlFile.write(reply["attachments"][0]["fallback"])
+            htmlFile.write(
+                "<bot>"+reply["attachments"][0]["fallback"]+"</bot>")
         elif subtype == None:
             pass
         else:
+            # 未知のもの
             print(subtype)
 
         # テキストメッセージがない場合
@@ -204,6 +213,7 @@ def makeHtmlFile():
                 </header>
 
                 <body>
+                <script type="text/javascript" src="script.js"></script>
             """
 
             # html ファイル
@@ -297,21 +307,23 @@ def makeHtmlFile():
                     # サーバ負荷対策
                     sleep(2)
                     replies = response.json()["messages"][1:]
+                    reply_id=datas["client_msg_id"]
 
                 else:
                     hasReplies = False
                     replies = 0
+                    reply_id = None
 
                 # テキストメッセージがない場合
                 if datas.get("blocks") == None:
-                    writeRepliesFile(replies, htmlFile, hasReplies)
+                    writeRepliesFile(replies, htmlFile, hasReplies,CHANNEL_NAME,reply_id)
                     continue
                 # テキストメッセージがある場合
                 else:
                     blocks = datas["blocks"][0]
 
                 if "elements" not in blocks.keys():
-                    writeRepliesFile(replies, htmlFile, hasReplies)
+                    writeRepliesFile(replies, htmlFile, hasReplies,CHANNEL_NAME,reply_id)
                     continue
                 else:
                     elements = blocks["elements"][0]
@@ -320,18 +332,18 @@ def makeHtmlFile():
                     elements = elements.get("elements")
                     for element in elements:
                         writeFile(element, htmlFile)
-                    writeRepliesFile(replies, htmlFile, hasReplies)
+                    writeRepliesFile(replies, htmlFile, hasReplies,CHANNEL_NAME,reply_id)
                     continue
 
                 if "elements" not in elements.keys():
-                    writeRepliesFile(replies, htmlFile, hasReplies)
+                    writeRepliesFile(replies, htmlFile, hasReplies,CHANNEL_NAME,reply_id)
                     continue
                 else:
                     elements = elements["elements"][0]
 
                 # html ファイルへの書き込み
                 writeFile(elements, htmlFile)
-                writeRepliesFile(replies, htmlFile, hasReplies)
+                writeRepliesFile(replies, htmlFile, hasReplies,CHANNEL_NAME,reply_id)
 
             f.close()
             htmlFile.close()

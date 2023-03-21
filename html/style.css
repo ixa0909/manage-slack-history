@@ -37,7 +37,34 @@ html {
   background-color: rgba(130, 184, 209, 0.5);
 }
 replies {
-  display: block;
+  display: none;
   width: 100%;
   background-color: rgba(184, 209, 130, 0.5);
+}
+
+strong {
+  display: block;
+  text-emphasis-color: red;
+  color: blue;
+}
+code {
+}
+strike {
+
+}
+url {
+
+}
+emoji {
+
+}
+mention {
+
+}
+user {
+  font-weight: bold;
+
+}
+user {
+  font-weight: bold;
 }

@@ -16,10 +16,11 @@ body {
   position: relative;
 }
 
-h3 {
+date {
   color: black;
   border-radius: 20px;
-
+  
+  display: block;
   text-align: center;
   border: solid 1px black;
   width: 200px;
@@ -28,6 +29,8 @@ h3 {
   background-color: white;
   margin: 10px auto;
 }
+
+
 
 h1 {
   text-align: center;

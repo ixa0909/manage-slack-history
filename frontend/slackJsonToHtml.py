@@ -25,9 +25,18 @@ dotenv_path = join(dirname(__file__), '../.env')
 load_dotenv(dotenv_path)
 TOKEN = os.getenv("SLACK_USER_TOKEN")
 
+# for 文を日付で 1 日ごとにまわすための関数
+
+
+def date_range_day(start, stop, step=relativedelta(days=1)):
+    current = start
+    while current < stop:
+        yield current
+        current += step
+
 
 # for 文を日付で 1 ヶ月ごとにまわすための関数
-def date_range(start, stop, step=relativedelta(months=1)):
+def date_range_month(start, stop, step=relativedelta(months=1)):
     current = start
     while current < stop:
         yield current
@@ -84,18 +93,19 @@ def writeFile(elements, file):
         file.write("<mention>"+"\#"+elements["channel_id"]+"</mention>")
 
 
-def writeRepliesFile(replies, htmlFile, hasReplies,channel_name,reply_id):
+def writeRepliesFile(replies, htmlFile, hasReplies, channel_name, reply_id):
 
     if hasReplies == False:
         return 0
-    
-    id = channel_name +"-"+reply_id
-    htmlFile.write("\n<br><input type=\"button\" value=\"返信\" onclick=\"test(\'"+id+"\')\">")
-    
+
+    id = channel_name + "-"+reply_id
+    htmlFile.write(
+        "\n<br><input type=\"button\" value=\"返信\" onclick=\"test(\'"+id+"\')\">")
+
     htmlFile.write("<replies id=\'"+id+"\'>\n")
     for reply in replies:
         # 送信者のユーザーID
-        htmlFile.write("<br><br>"+"<user>" +
+        htmlFile.write("<br>"+"<user>" +
                        str(reply.get("user"))+"</user>"+"<br>\n")
 
         # ユーザー名がある場合
@@ -171,6 +181,12 @@ def makeHtmlFile():
     # 投稿に対する返信を取得する API の URL
     url = "https://slack.com/api/conversations.replies"
 
+    # 今月と先月の初日 (1 日)
+    today = datetime.date.today()
+    MonthAgo = today+relativedelta(months=-1)
+    toMonth = date(today.year, today.month, 1)
+    fromMonth = date(MonthAgo.year, MonthAgo.month, 1)
+
     print("対象チャンネル")
     # チャンネルごとに html を作成
     for CHANNEL_INFO in channels:
@@ -178,14 +194,51 @@ def makeHtmlFile():
         CHANNEL_ID = CHANNEL_INFO["id"]
         CHANNEL_NAME = CHANNEL_INFO["name"]
 
-        # 今月と先月の初日 (1 日)
-        today = datetime.date.today()
-        MonthAgo = today+relativedelta(months=-1)
-        toMonth = date(today.year, today.month, 1)
-        fromMonth = date(MonthAgo.year, MonthAgo.month, 1)
+        # html の先頭部分
+        head = """
+        <!DOCTYPE html>
+        <meta charset="UTF-8">
+        
+        <html>
+    
+            <head>
+            <link rel="stylesheet" href="style.css">
+            </head>
+            
+            <header>
+            <div class ="title">
+                <h1>"""+CHANNEL_NAME+"""</h1>
+            </div>
+            </header>
+
+            <body>
+            <script type="text/javascript" src="script.js"></script>
+        """
+
+        # html ファイル
+        htmlFileName = "../html/"+CHANNEL_NAME+".html"
+
+        # 新チャンネルの場合
+        if os.path.isfile(htmlFileName) != True:
+            # html ファイルを新規作成
+            htmlFile = open(htmlFileName, mode="w")
+            htmlFile.write(head)
+            htmlFile.close()
+
+            # 目次ページへの追記
+            htmlIndexFileName = "../index.html"
+            htmlIndexFile = open(htmlIndexFileName, mode="a")
+            # 各チャンネルごとのページへのリンク
+            htmlLink = """
+            <div>
+                <a href="../html/"""+CHANNEL_NAME+""".html">"""+CHANNEL_NAME+"""</a>
+            </div>
+            """
+            htmlIndexFile.write(htmlLink)
+            htmlIndexFile.close()
 
         # 1 ヶ月ごとに書き込み
-        for month in date_range(fromMonth, toMonth):
+        for month in date_range_month(fromMonth, toMonth):
             # 西暦と月を用いてファイル名を指定
             month = str(month)[0:7]
             fileName = "../data/"+CHANNEL_NAME+"/"+str(month)+".json"
@@ -195,59 +248,15 @@ def makeHtmlFile():
                 continue
             print(CHANNEL_NAME)
 
-            # html の先頭部分
-            head = """
-            <!DOCTYPE html>
-            <meta charset="UTF-8">
-            
-            <html>
-        
-                <head>
-                <link rel="stylesheet" href="style.css">
-                </head>
-                
-                <header>
-                <div class ="title">
-                    <h1>"""+CHANNEL_NAME+"""</h1>
-                </div>
-                </header>
-
-                <body>
-                <script type="text/javascript" src="script.js"></script>
-            """
-
-            # html ファイル
-            htmlFileName = "../html/"+CHANNEL_NAME+".html"
-
-            # 新チャンネルの場合
-            if os.path.isfile(htmlFileName) != True:
-                # html ファイルを新規作成
-                htmlFile = open(htmlFileName, mode="w")
-                htmlFile.write(head)
-                htmlFile.close()
-
-                # 目次ページへの追記
-                htmlIndexFileName = "../index.html"
-                htmlIndexFile = open(htmlIndexFileName, mode="a")
-                # 各チャンネルごとのページへのリンク
-                htmlLink = """
-                <div>
-                    <a href="./html/"""+CHANNEL_NAME+""".html">"""+CHANNEL_NAME+"""</a>
-                </div>
-                """
-                htmlIndexFile.write(htmlLink)
-                htmlIndexFile.close()
-
+            # メッセージを追記モードで書き込み
+            htmlFile = open(htmlFileName, mode="a")
             # 履歴データの読み込み
             f = open(fileName, "r", encoding="utf-8")
             messages = json.load(f)["messages"]
             f.close()
+            htmlFile.write("<br>\n<date><strong>"+month+"</strong></date>\n")
 
-            # メッセージを追記モードで書き込み
-            htmlFile = open(htmlFileName, mode="a")
-            htmlFile.write("<br>\n<h3>"+month+"</h3>\n")
-
-            # 各メッセージごとに処理 ※ データが新→古の順であるため逆順で処理
+            # 各メッセージごとに処理
             for datas in list(reversed(messages)):
                 # 送信者
                 htmlFile.write("<br><br>"+str(datas.get("user"))+"<br>\n")
@@ -264,7 +273,7 @@ def makeHtmlFile():
                 # ファイルを添付している場合
                 if "files" in datas.keys():
                     files = datas["files"]
-                    htmlFile.write("<br>"+files[0]["name"]+"<br>\n")
+                    htmlFile.write("<br>"+str(files[0].get("name"))+"<br>\n")
                     if files[0].get("mode") == "hidden_by_limit":
                         htmlFile.write(
                             "<br>ファイルの容量制限（以前は制限があった。）のため削除されました。\n")
@@ -307,7 +316,7 @@ def makeHtmlFile():
                     # サーバ負荷対策
                     sleep(2)
                     replies = response.json()["messages"][1:]
-                    reply_id=datas["client_msg_id"]
+                    reply_id = datas["client_msg_id"]
 
                 else:
                     hasReplies = False
@@ -316,14 +325,16 @@ def makeHtmlFile():
 
                 # テキストメッセージがない場合
                 if datas.get("blocks") == None:
-                    writeRepliesFile(replies, htmlFile, hasReplies,CHANNEL_NAME,reply_id)
+                    writeRepliesFile(replies, htmlFile,
+                                     hasReplies, CHANNEL_NAME, reply_id)
                     continue
                 # テキストメッセージがある場合
                 else:
                     blocks = datas["blocks"][0]
 
                 if "elements" not in blocks.keys():
-                    writeRepliesFile(replies, htmlFile, hasReplies,CHANNEL_NAME,reply_id)
+                    writeRepliesFile(replies, htmlFile,
+                                     hasReplies, CHANNEL_NAME, reply_id)
                     continue
                 else:
                     elements = blocks["elements"][0]
@@ -332,20 +343,22 @@ def makeHtmlFile():
                     elements = elements.get("elements")
                     for element in elements:
                         writeFile(element, htmlFile)
-                    writeRepliesFile(replies, htmlFile, hasReplies,CHANNEL_NAME,reply_id)
+                    writeRepliesFile(replies, htmlFile,
+                                     hasReplies, CHANNEL_NAME, reply_id)
                     continue
 
                 if "elements" not in elements.keys():
-                    writeRepliesFile(replies, htmlFile, hasReplies,CHANNEL_NAME,reply_id)
+                    writeRepliesFile(replies, htmlFile,
+                                     hasReplies, CHANNEL_NAME, reply_id)
                     continue
                 else:
                     elements = elements["elements"][0]
 
                 # html ファイルへの書き込み
                 writeFile(elements, htmlFile)
-                writeRepliesFile(replies, htmlFile, hasReplies,CHANNEL_NAME,reply_id)
+                writeRepliesFile(replies, htmlFile, hasReplies,
+                                 CHANNEL_NAME, reply_id)
 
-            f.close()
             htmlFile.close()
 
 

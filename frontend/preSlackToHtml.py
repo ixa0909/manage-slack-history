@@ -262,6 +262,7 @@ def makeHtmlFile():
             htmlFile.write("<br>\n<date><strong>"+day+"</strong></date>\n")
 
             # 各メッセージごとに処理
+            i = 0
             for datas in messages:
                 # 送信者
                 htmlFile.write("<br><br>"+str(datas.get("user"))+"<br>")
@@ -299,28 +300,57 @@ def makeHtmlFile():
                     pass
                 else:
                     print(subtype)
+
+                # 投稿メッセージへの返信履歴の取得
+                if "reply_count" in datas.keys():
+                    reply_count = datas["reply_count"]
+                    hasReplies = True
+                    reply_id = datas["client_msg_id"]
+                    replies = datas[i+1:i+1+reply_count]
+                    i += 1+reply_count
+                else:
+                    hasReplies = False
+                    replies = 0
+                    reply_id = None
+                    i += 1
+
+               # テキストメッセージがない場合
+                if datas.get("blocks") == None:
+                    writeRepliesFile(replies, htmlFile,
+                                     hasReplies, CHANNEL_NAME, reply_id)
                     continue
-                blocks = datas["blocks"][0]
+                # テキストメッセージがある場合
+                else:
+                    blocks = datas["blocks"][0]
 
                 if "elements" not in blocks.keys():
+                    writeRepliesFile(replies, htmlFile,
+                                     hasReplies, CHANNEL_NAME, reply_id)
                     continue
                 else:
-                    if len(blocks["elements"]) == 0:
-                        continue
                     elements = blocks["elements"][0]
 
                 if elements.get("type") == "rich_text_section":
                     elements = elements.get("elements")
                     for element in elements:
                         writeFile(element, htmlFile)
+                    writeRepliesFile(replies, htmlFile,
+                                     hasReplies, CHANNEL_NAME, reply_id)
                     continue
 
                 if "elements" not in elements.keys():
+                    writeRepliesFile(replies, htmlFile,
+                                     hasReplies, CHANNEL_NAME, reply_id)
                     continue
                 else:
                     elements = elements["elements"][0]
 
                 # html ファイルへの書き込み
                 writeFile(elements, htmlFile)
+                writeRepliesFile(replies, htmlFile, hasReplies,
+                                 CHANNEL_NAME, reply_id)
 
             htmlFile.close()
+
+
+makeHtmlFile()

@@ -14,12 +14,13 @@
 body {
   top: 80px;
   position: relative;
+  width: 100%;
 }
 
 date {
   color: black;
   border-radius: 20px;
-  
+
   display: block;
   text-align: center;
   border: solid 1px black;
@@ -30,8 +31,6 @@ date {
   margin: 10px auto;
 }
 
-
-
 h1 {
   text-align: center;
 }
@@ -40,9 +39,10 @@ html {
   background-color: rgba(130, 184, 209, 0.5);
 }
 replies {
-  display: none;
-  width: 100%;
+  display: block;
   background-color: rgba(184, 209, 130, 0.5);
+  
+  
 }
 
 strong {
@@ -51,23 +51,44 @@ strong {
   color: blue;
 }
 code {
+  display: block;
 }
 strike {
-
+  display: block;
 }
 url {
-
+  display: block;
 }
 emoji {
-
+  display: block;
 }
 mention {
-
+  display: block;
 }
 user {
   font-weight: bold;
+  display: block;
+}
+ts {
+  display: block;
 
 }
-user {
-  font-weight: bold;
+
+
+attachments {
+  display: flex;
+  background-color: antiquewhite;
+  justify-content: space-between;
+}
+.attachments_text {
+  width: 75%;
+}
+.attachments_img {
+  width: 25%;
+}
+title {
+  display: block;
+}
+.btn {
+  display: block;
 }

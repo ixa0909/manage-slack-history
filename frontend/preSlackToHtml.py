@@ -18,8 +18,8 @@ from dotenv import load_dotenv
 # 投稿への返信データを取得する GET 送信
 import requests
 from time import sleep
-import traceback
 
+import traceback
 import queue
 
 # 環境変数の読み込み
@@ -28,8 +28,9 @@ dotenv_path = join(dirname(__file__), '../.env')
 load_dotenv(dotenv_path)
 TOKEN = os.getenv("SLACK_USER_TOKEN")
 
-
 # for 文を日付で 1 日ごとにまわすための関数
+
+
 def date_range_day(start, stop, step=relativedelta(days=1)):
     current = start
     while current < stop:
@@ -56,36 +57,32 @@ def writeLink(file, link):
 
 
 def writeAttachment(file, CHANNEL_NAME, attachments, ts, isTrello):
+    # 添付概要の書き込み
     for i, attachment in enumerate(attachments):
-        # ボタン
+        # 添付概要表示・非表示ボタン
         id = CHANNEL_NAME + "-" + \
             str(ts).replace(".", "")+"-"+str(i)
         writeln(file,
-                "<input class=\"btn\" type=\"button\" value=\"表示・非表示\" onclick=\"attachments_display(\'"+id+"\')\">")
+                "<input class=\"btn\" type=\"button\" value=\"添付概要\" onclick=\"attachments_display(\'"+id+"\')\">")
         writeln(file, "<attachments id=\""+id+"\">")
 
-        # 概要
-        factor = {}
-        factor["title"] = attachment.get("title")
-        factor["author_name"] = attachment.get(
-            'author_name')
-
-        factor["fallback"] = attachment.get('fallback')
-
-        factor["text"] = attachment.get("text")
-        factor["pretext"] = attachment.get("pretext")
-        factor["url"] = attachment.get(
-            "author_link")
-
+        # 添付概要
         writeln(file, "<div class=\"attachments_text\">")
-        for key in factor.keys():
-            # if factor[key] == None: continue
-            if key == "url" and factor[key] != None:
-                writeLink(file, factor[key])
+
+        for name in ["title", "author_name", "fallback", "text", "pretext"]:
+
+            text = attachment.get(name)
+            if text == None:
                 continue
-            writeln(file, "<"+key+">" +
-                    str(factor[key])+"</"+key+">")
+            writeln(file, "<"+name+">" +
+                    str(text)+"</"+name+">")
+        author_link = attachment.get("author_link")
+        if author_link != None:
+            writeLink(file, author_link)
+
         writeln(file, "</div>")
+
+        # Trello からの通知なら Trello の画像を表示
         if isTrello:
             file_name = "../file/"+"trello.png"
             writeln(file,
@@ -107,7 +104,8 @@ def writeAttachment(file, CHANNEL_NAME, attachments, ts, isTrello):
 
 
 # html ファイルへのメッセージの書き込み
-def writeFile(elements, file):
+def writeFile(file, elements):
+
     # テキストメッセージの場合
     if elements["type"] == "text":
         # 文字の置換
@@ -151,82 +149,6 @@ def writeFile(elements, file):
         file.write("<mention>"+"\#"+elements["channel_id"]+"</mention>")
 
 
-def writeReplyFile(reply, htmlFile):
-
-    # 送信者のユーザーID
-    writeln(htmlFile, "<br>ユーザー ID: <user_id>" +
-            str(reply.get("user"))+"</user_id>"+"<br>\n")
-
-    # ユーザー名がある場合
-    if "username" in reply.keys():
-        writeln(htmlFile, "<user>" +
-                reply.get("username")+"</user>")
-
-    # ファイルを添付している場合
-    if "files" in reply.keys():
-        files = reply["files"][0]
-        if files.get("mode") == "tombstone":
-            writeln(htmlFile, "表示期間が終了しています\n"++
-                    "ファイル ID: "+files.get("id"))
-        else:
-            writeln(htmlFile, "<file>"+str(files.get("name"))+"</file>")
-            if files.get("mode") == "hidden_by_limit":
-                # 以前のプランではファイルの容量制限により過去のファイルが削除されていた
-                writeln(htmlFile, "ファイルの容量制限による非表示")
-
-    # チャンネル参加メッセージ
-    subtype = reply.get("subtype")
-    message_type = reply.get("type")
-    if subtype == "channel_join":
-        writeln(htmlFile, reply["text"])
-    # チャンネル退出メッセージ
-    elif subtype == "channel_leave":
-        writeln(htmlFile, reply["text"])
-    elif subtype == "thread_broadcast":
-        pass
-    # ボットのメッセージ
-    elif subtype == "bot_message" and message_type == "message":
-        writeln(htmlFile,
-                "<bot>"+reply["text"]+"</bot>")
-    elif subtype == "bot_message":
-        writeln(htmlFile,
-                "<bot>"+reply["attachments"][0]["fallback"]+"</bot>")
-    elif subtype == None:
-        pass
-    else:
-        # 未知のもの
-        print(subtype)
-
-    # html ファイルへの書き込み
-    # テキストメッセージがない場合
-    if reply.get("blocks") == None:
-        return 0
-    # テキストメッセージがある場合
-    else:
-        blocks = reply["blocks"][0]
-
-    if "elements" not in blocks.keys():
-        return 0
-    else:
-        elements = blocks["elements"][0]
-
-    if elements.get("type") == "rich_text_section":
-        elements = elements.get("elements")
-        for element in elements:
-            writeFile(element, htmlFile)
-
-        return 0
-    if "elements" not in elements.keys():
-
-        return 0
-    else:
-        elements = elements["elements"][0]
-
-    # html ファイルへの書き込み
-
-    writeFile(elements, htmlFile)
-
-
 def makeHtmlFile():
     # チャンネル一覧の読み込み
     channelFile = open("../data/channels.json", "r")
@@ -239,8 +161,6 @@ def makeHtmlFile():
     # 今月と先月の初日 (1 日)
     today = datetime.date.today()
     MonthAgo = today+relativedelta(months=-1)
-    toMonth = date(today.year, today.month, 1)
-    fromMonth = date(MonthAgo.year, MonthAgo.month, 1)
 
     print("対象チャンネル")
     # チャンネルごとに html を作成
@@ -250,10 +170,7 @@ def makeHtmlFile():
 
         CHANNEL_NAME = CHANNEL_INFO["name"]
 
-        CHANNEL_NAME = "random"
-        if count == 1:
-            return 0
-        count += 1
+        
 
         # html の先頭部分
         head = """
@@ -305,16 +222,19 @@ def makeHtmlFile():
             htmlIndexFile.close()
 
         # 日付を指定する必要がある
-        # dayStart = date(2023, 2, 14)
-        # dayEnd = date(2023, 2, 19)
-        dayStart = date(2017, 8, 5)
-        dayEnd = date(2023, 3, 15)
+        # dayStart = date(2018, 10, 14)
+        # dayEnd = date(2018, 10, 19)
+        dayStart = date(2017, 7, 16)
+        dayEnd = date(2023, 3, 17)
         reply_count = 0
 
         thread_ts = None
 
         store_posts = []
         store_replies = queue.Queue()
+
+        # メッセージを追記モードで書き込み
+        htmlFile = open(htmlFileName, mode="a")
 
         for day in date_range_day(dayStart, dayEnd):
 
@@ -324,8 +244,6 @@ def makeHtmlFile():
             if os.path.isfile(fileName) != True:
                 continue
 
-            # メッセージを追記モードで書き込み
-            htmlFile = open(htmlFileName, mode="a")
             # 履歴データの読み込み
             f = open(fileName, "r", encoding="utf-8")
             messages = json.load(f)
@@ -347,11 +265,12 @@ def makeHtmlFile():
             ts = float(ts_str)
             dt = datetime.datetime.fromtimestamp(ts)
             date_time = dt.strftime("%Y-%m-%d %H:%M:%S")
+
             if focus_day != date_time[:10]:
                 focus_day = date_time[:10]
                 writeln(htmlFile, "<date>"+focus_day+"</date>")
 
-            writePost(htmlFile, post, date_time, CHANNEL_NAME, ts)
+            writeMessage(htmlFile, post, date_time, CHANNEL_NAME)
 
             id = CHANNEL_NAME + "-" + \
                 ts_str.replace(".", "")
@@ -368,7 +287,7 @@ def makeHtmlFile():
                 for _ in range(store_replies.qsize()):
                     reply = store_replies.get()
                     if thread_ts == reply["thread_ts"]:
-                        writeReplyFile(reply, htmlFile)
+                        writeMessage(htmlFile, reply, date_time, CHANNEL_NAME)
                         reply_count -= 1
                     else:
                         store_replies.put(reply)
@@ -378,7 +297,7 @@ def makeHtmlFile():
         htmlFile.close()
 
 
-def writePost(file, post, date_time, channel_name, ts):
+def writeMessage(file, post, date_time, channel_name):
 
     # 送信者 ID
     user_id = str(post.get("user"))
@@ -386,26 +305,57 @@ def writePost(file, post, date_time, channel_name, ts):
             user_id+"</user_id>")
 
     # 送信時刻
+    ts_str = post.get("ts")
+    ts = float(ts_str)
+    dt = datetime.datetime.fromtimestamp(ts)
+    date_time = dt.strftime("%Y-%m-%d %H:%M:%S")
+
     writeln(file, "<ts>"+date_time+"</ts>")
 
     # 送信者名
-    user_profile = post.get("user_profile")
-    if user_profile != None:
-        display_name = user_profile.get("display_name")
-        writeln(file, "<user>"+display_name+"</user>")
+    # user_profile = post.get("user_profile")
+    # if user_profile != None:
+    #     display_name = user_profile.get("display_name")
+    #     writeln(file, "<user>"+display_name+"</user>")
 
     # ユーザー名がある場合
-    if "username" in post.keys():
-        writeln(file, "<user>" +
-                post.get("username")+"</user>")
+    # if "username" in post.keys():
+    #     writeln(file, "<user>" +
+    #             post.get("username")+"</user>")
 
     # ファイルを添付している場合
     if "files" in post.keys():
-        files = post["files"]
-        writeln(file, "<file>" +
-                str(files[0].get("name"))+"</file>")
+        files = post["files"][0]
 
-        if files[0].get("mode") == "hidden_by_limit":
+        image_url = files.get("url_private")
+        writeln(file, "<file>" +
+                str(files.get("name"))+"</file>")
+        if image_url != None:
+
+            sleep(2)
+            response = requests.get(image_url)
+            image = response.content
+            dirname = "../file/"+channel_name + \
+                "/"
+            file_name = files.get("name")
+
+            if os.path.isfile("../file/"+channel_name +
+                              "/"+file_name):
+                number = 1
+                while os.path.isfile("../file/"+channel_name +
+                                     "/"+str(number)+file_name):
+                    number += 1
+                file_name = str(number)+file_name
+
+            with open(dirname+file_name, "wb") as image_file:
+                image_file.write(image)
+
+            if files.get("filetype") in ["png", "jpg", "jpeg"]:
+                writeln(file,
+                        "<img class=\"img\" src="+dirname+file_name+">")
+
+        # 以前のプランではファイルの容量制限により過去のファイルが削除されていた
+        if files.get("mode") == "hidden_by_limit":
             writeln(file,
                     "<br>ファイルの容量制限による非表示\n")
 
@@ -429,44 +379,30 @@ def writePost(file, post, date_time, channel_name, ts):
     else:
         print(subtype)
 
-    
-    # テキストメッセージがない場合
     if post.get("blocks") == None:
-        return 0
-    # テキストメッセージがある場合
+        text = post.get("text")
+        if text != None:
+            # html ファイルへの書き込み
+            writeln(file, text)
+
     else:
         blocks = post["blocks"][0]
 
-    if "elements" not in blocks.keys():
+        if "elements" in blocks.keys():
+            elements = blocks["elements"][0]
 
-        return 0
-    else:
-        elements = blocks["elements"][0]
+            if elements.get("type") == "rich_text_section":
+                elements = elements.get("elements")
+                for element in elements:
+                    # html ファイルへの書き込み
+                    writeFile(file, element)
 
-    if elements.get("type") == "rich_text_section":
-        elements = elements.get("elements")
-        for element in elements:
-            writeFile(element, file)
-        # 添付 URL の概要
-        attachments = post.get("attachments")
-        if attachments != None and post.get("username") != "Trello":
-            isTrello = False
-            writeAttachment(file, channel_name,
-                            attachments, ts, isTrello)
-        elif post.get("username") == "Trello":
-            isTrello = True
-            writeAttachment(file, channel_name,
-                            attachments, ts, isTrello)
-        return 0
+            else:
+                if "elements" in elements.keys():
+                    elements = elements["elements"][0]
+                    # html ファイルへの書き込み
+                    writeFile(file, elements)
 
-    if "elements" not in elements.keys():
-
-        return 0
-    else:
-        elements = elements["elements"][0]
-
-    # html ファイルへの書き込み
-    writeFile(elements, file)
     # 添付 URL の概要
     attachments = post.get("attachments")
     if attachments != None and post.get("username") != "Trello":

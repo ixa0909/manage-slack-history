@@ -69,8 +69,15 @@ user_id {
 user {
   font-weight: bold;
   display: block;
-  
 }
+.img {
+  width:60%;
+  margin-left: 20%;
+  margin-right:20%;
+  display: inline-block;
+  text-align: center;
+}
+
 ts {
   display: block;
 }
@@ -98,5 +105,8 @@ title {
   display: block;
 }
 .btn {
+  display: block;
+}
+file {
   display: block;
 }

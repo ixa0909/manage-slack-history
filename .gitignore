@@ -6,3 +6,9 @@ sample*
 *.html
 *.json
 main
+*.pdf
+*.pptx
+*.jpg
+*.png
+*.docx
+

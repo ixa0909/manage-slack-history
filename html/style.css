@@ -41,8 +41,6 @@ html {
 replies {
   display: block;
   background-color: rgba(184, 209, 130, 0.5);
-  
-  
 }
 
 strong {
@@ -60,20 +58,22 @@ url {
   display: block;
 }
 emoji {
-  display: block;
+  display: inline-block;
 }
 mention {
   display: block;
 }
+user_id {
+  font-weight: bold;
+}
 user {
   font-weight: bold;
   display: block;
+  
 }
 ts {
   display: block;
-
 }
-
 
 attachments {
   display: flex;
@@ -85,6 +85,14 @@ attachments {
 }
 .attachments_img {
   width: 25%;
+}
+title,
+author_name,
+fallback,
+pretext,
+author_link,
+text {
+  display: block;
 }
 title {
   display: block;
